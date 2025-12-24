@@ -76,6 +76,8 @@ fi
 # 4. Steam
 # ─────────────────────────────────────────────
 if ask "Install Steam?"; then
+  run "sudo dpkg --add-architecture i386"
+  run "sudo apt update"
   run "sudo apt install -y steam"
 fi
 
@@ -108,9 +110,10 @@ fi
 # 8. T480 tweaks
 # ─────────────────────────────────────────────
 if ask "Apply T480 performance & stability tweaks?"; then
-  run "sudo apt install -y cpufrequtils thermald"
-  run "echo 'GOVERNOR=\"performance\"' | sudo tee /etc/default/cpufrequtils"
-  run "sudo systemctl restart cpufrequtils"
+  sudo apt install -y linux-cpupower thermald
+  echo 'GOVERNOR="performance"' | sudo tee /etc/default/cpupower
+  sudo systemctl enable cpupower
+  sudo systemctl restart cpupower
   run "sudo systemctl enable thermald"
 
   run "echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf"
