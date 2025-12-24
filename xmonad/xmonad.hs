@@ -5,6 +5,8 @@
 
 import XMonad
 import qualified XMonad.StackSet as W
+import System.Exit (exitSuccess)
+
 
 -- Hooks
 import XMonad.Hooks.EwmhDesktops
