@@ -64,7 +64,8 @@ fi
 if ask "Install XMonad, Kitty, dmenu, tools?"; then
   run "sudo apt install --no-install-recommends -y \
     xmonad xmobar suckless-tools \
-    kitty dmenu feh scrot"
+    kitty dmenu feh scrot \
+    pamixer brightnessctl"
 fi
 
 # ─────────────────────────────────────────────
