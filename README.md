@@ -60,6 +60,117 @@ It represents a **documented system state**:
 The goal is to **rebuild the system reliably** on the same hardware at any time.
 
 ---
+# XMonad Keybindings — Gruvnode
+
+🇩🇪 Kurzübersicht der wichtigsten Tastenkombinationen  
+🇬🇧 Quick overview of the most important keybindings
+
+**Mod key:** `Super` (Windows key)
+
+---
+
+## 🚀 Applications / Anwendungen
+
+| Key | Action |
+|----|--------|
+| `Super + Enter` | Terminal (Kitty) |
+| `Super + D` | dmenu (Application launcher) |
+| `Super + B` | Google Chrome |
+
+---
+
+## 🪟 Window Management / Fensterverwaltung
+
+| Key | Action |
+|----|--------|
+| `Super + Q` | Close focused window |
+| `Super + Shift + Q` | Exit XMonad (logout) |
+
+---
+
+## 🧭 Focus / Fokus
+
+| Key | Action |
+|----|--------|
+| `Super + J` | Focus next window |
+| `Super + K` | Focus previous window |
+| `Super + M` | Focus master window |
+
+---
+
+## 🔀 Swap Windows / Fenster tauschen
+
+| Key | Action |
+|----|--------|
+| `Super + Shift + J` | Swap window down |
+| `Super + Shift + K` | Swap window up |
+
+---
+
+## 📐 Layout & Resize / Layout & Größe
+
+| Key | Action |
+|----|--------|
+| `Super + Space` | Cycle layouts |
+| `Super + H` | Shrink window |
+| `Super + L` | Expand window |
+
+---
+
+## 🔄 XMonad Control
+
+| Key | Action |
+|----|--------|
+| `Super + Shift + R` | Recompile & restart XMonad |
+
+---
+
+## 📸 Screenshots
+
+| Key | Action |
+|----|--------|
+| `Print` | Screenshot → `~/Pictures/screenshots/` |
+
+---
+
+## 🔊 Volume / Lautstärke
+
+| Key | Action |
+|----|--------|
+| `XF86AudioRaiseVolume` | Volume +5 % |
+| `XF86AudioLowerVolume` | Volume −5 % |
+| `XF86AudioMute` | Toggle mute |
+
+---
+
+## 🔆 Brightness / Helligkeit
+
+| Key | Action |
+|----|--------|
+| `XF86MonBrightnessUp` | Brightness +5 % |
+| `XF86MonBrightnessDown` | Brightness −5 % |
+
+---
+
+## 📝 Notes / Hinweise
+
+🇩🇪  
+- Klassische, minimalistische XMonad-Keybindings  
+- Keine Wayland- oder Compositor-Abhängigkeiten  
+- Optimiert für Stabilität, geringe Latenz und lange Sessions  
+
+🇬🇧  
+- Classic, minimal XMonad keybindings  
+- No Wayland or compositor dependencies  
+- Optimized for stability, low latency and long sessions  
+
+---
+
+**System:** Debian 13 + XMonad  
+**Hardware target:** ThinkPad T480 (Gruvnode)
+
+
+
 🖥️ Hardware Target / Zielhardware
 
 Lenovo ThinkPad T480
