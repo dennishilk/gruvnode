@@ -1,104 +1,141 @@
 #!/usr/bin/env bash
 set -e
 
+DRY_RUN=false
+
+ask() {
+  read -rp "$1 [y/N]: " answer
+  [[ "$answer" =~ ^[Yy]$ ]]
+}
+
+run() {
+  if $DRY_RUN; then
+    echo "[DRY-RUN] $*"
+  else
+    eval "$@"
+  fi
+}
+
+if ask "Enable DRY-RUN mode (no changes will be made)?"; then
+  DRY_RUN=true
+  echo ">>> DRY-RUN ENABLED — no commands will be executed"
+fi
+
 if ! sudo -v; then
   echo "This script requires sudo privileges."
   exit 1
 fi
 
-echo "== Debian 13 Minimal → XMonad Gaming Setup =="
+echo "== Debian 13 T480 XMonad Gaming Setup (Interactive) =="
 
 # ─────────────────────────────────────────────
 # 1. Enable non-free repositories
 # ─────────────────────────────────────────────
-echo "[1/7] Enable non-free repositories"
-
-sudo sed -i 's/main/main contrib non-free non-free-firmware/' /etc/apt/sources.list
-sudo apt update
-
-# ─────────────────────────────────────────────
-# 2. Base system (X11, Login, Audio, Network)
-# ─────────────────────────────────────────────
-echo "[2/7] Install base system"
-
-sudo apt install --no-install-recommends -y \
-  xorg \
-  xinit \
-  dbus-x11 \
-  network-manager \
-  lightdm \
-  lightdm-gtk-greeter \
-  pipewire \
-  pipewire-audio \
-  wireplumber \
-  alsa-utils \
-  firmware-misc-nonfree \
-  mesa-vulkan-drivers \
-  intel-media-va-driver \
-  fonts-dejavu \
-  fonts-jetbrains-mono \
-  git \
-  curl \
-  unzip \
-  wget
-
-sudo systemctl enable NetworkManager
-sudo systemctl enable lightdm
+if ask "Enable contrib / non-free / non-free-firmware repositories?"; then
+  run "sudo sed -i 's/main/main contrib non-free non-free-firmware/' /etc/apt/sources.list"
+  run "sudo apt update"
+fi
 
 # ─────────────────────────────────────────────
-# 3. XMonad (minimal)
+# 2. Base system
 # ─────────────────────────────────────────────
-echo "[3/7] Install XMonad"
+if ask "Install base system (X11, LightDM, Audio, NetworkManager)?"; then
+  run "sudo apt install --no-install-recommends -y \
+    xorg xinit dbus-x11 network-manager \
+    lightdm lightdm-gtk-greeter \
+    pipewire pipewire-audio wireplumber alsa-utils \
+    firmware-misc-nonfree mesa-vulkan-drivers intel-media-va-driver \
+    xserver-xorg-video-intel \
+    fonts-dejavu fonts-jetbrains-mono \
+    git curl unzip wget"
 
-sudo apt install --no-install-recommends -y \
-  xmonad \
-  xmobar \
-  suckless-tools \
-  feh \
-  xterm
+  run "sudo systemctl enable NetworkManager"
+  run "sudo systemctl enable lightdm"
+fi
 
-mkdir -p ~/.xmonad
+# ─────────────────────────────────────────────
+# 3. XMonad
+# ─────────────────────────────────────────────
+if ask "Install XMonad (minimal, X11)?"; then
+  run "sudo apt install --no-install-recommends -y \
+    xmonad xmobar suckless-tools feh xterm"
 
-cat > ~/.xmonad/xmonad.hs <<'EOF'
+  if ! $DRY_RUN; then
+    mkdir -p ~/.xmonad
+    cat > ~/.xmonad/xmonad.hs <<'EOF'
 import XMonad
-
 main :: IO ()
 main = xmonad def
 EOF
+  else
+    echo "[DRY-RUN] create ~/.xmonad/xmonad.hs"
+  fi
+fi
 
 # ─────────────────────────────────────────────
 # 4. Steam
 # ─────────────────────────────────────────────
-echo "[4/7] Install Steam"
-
-sudo apt install -y steam
+if ask "Install Steam?"; then
+  run "sudo apt install -y steam"
+fi
 
 # ─────────────────────────────────────────────
 # 5. Google Chrome
 # ─────────────────────────────────────────────
-echo "[5/7] Install Google Chrome"
-
-cd /tmp
-if wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb; then
-  sudo apt install -y ./google-chrome-stable_current_amd64.deb
-else
-  echo "Chrome download failed – skipping."
+if ask "Install Google Chrome?"; then
+  run "cd /tmp && wget -q https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb"
+  run "sudo apt install -y /tmp/google-chrome-stable_current_amd64.deb"
 fi
 
 # ─────────────────────────────────────────────
-# 6. Cleanup
+# 6. Fastfetch
 # ─────────────────────────────────────────────
-echo "[6/7] Cleanup"
+if ask "Install fastfetch?"; then
+  run "sudo apt install -y fastfetch"
+fi
 
-sudo apt autoremove -y
-sudo apt clean
+# ─────────────────────────────────────────────
+# 7. zram
+# ─────────────────────────────────────────────
+if ask "Enable zram (compressed RAM swap)?"; then
+  run "sudo apt install -y zram-tools"
+  run "sudo sed -i 's/#ALGO=.*/ALGO=zstd/' /etc/default/zramswap"
+  run "sudo sed -i 's/#PERCENT=.*/PERCENT=25/' /etc/default/zramswap"
+  run "sudo systemctl enable zramswap"
+fi
 
 # ─────────────────────────────────────────────
-# 7. Done
+# 8. T480 tweaks
 # ─────────────────────────────────────────────
-echo "[7/7] DONE"
+if ask "Apply T480 performance & stability tweaks?"; then
+  run "sudo apt install -y cpufrequtils thermald"
+  run "echo 'GOVERNOR=\"performance\"' | sudo tee /etc/default/cpufrequtils"
+  run "sudo systemctl restart cpufrequtils"
+  run "sudo systemctl enable thermald"
+
+  run "echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf"
+
+  run "sudo mkdir -p /etc/systemd/journald.conf.d"
+  run "echo -e '[Journal]\nSystemMaxUse=200M' | sudo tee /etc/systemd/journald.conf.d/limit.conf"
+
+  run "sudo tee /etc/NetworkManager/conf.d/wifi-powersave.conf <<EOF
+[connection]
+wifi.powersave = 2
+EOF"
+
+  run "sudo systemctl restart NetworkManager"
+fi
+
+# ─────────────────────────────────────────────
+# 9. Cleanup
+# ─────────────────────────────────────────────
+if ask "Run cleanup (autoremove & apt clean)?"; then
+  run "sudo apt autoremove -y"
+  run "sudo apt clean"
+fi
+
 echo
-echo "Reboot now."
-echo "At LightDM login: select session → XMonad"
-echo "Steam → Settings → Enable Proton Experimental"
-echo
+echo "============================================"
+echo " DONE!"
+$DRY_RUN && echo " DRY-RUN completed — no changes were made."
+echo "============================================"
