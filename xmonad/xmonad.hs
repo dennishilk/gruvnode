@@ -28,14 +28,14 @@ main =
     . ewmhFullscreen
     . ewmh
     $ def
-        { terminal = "kitty"
-        , modMask = mod4Mask
-        , borderWidth = 2
+        { terminal           = "kitty"
+        , modMask            = mod4Mask
+        , borderWidth        = 2
         , focusedBorderColor = "#89b4fa"
-        , normalBorderColor = "#1e1e2e"
-        , layoutHook = myLayout
-        , manageHook = myManageHook
-        , startupHook = myStartupHook
+        , normalBorderColor  = "#1e1e2e"
+        , layoutHook         = myLayout
+        , manageHook         = myManageHook
+        , startupHook        = myStartupHook
         }
         `additionalKeysP` myKeys
 
@@ -62,7 +62,7 @@ myManageHook =
 myStartupHook :: X ()
 myStartupHook = do
   spawnOnce "feh --bg-fill ~/Pictures/wallpapers/1.png"
-  setWMName "LG3D" -- Wine / Proton compatibility
+  setWMName "LG3D"   -- Wine / Proton compatibility
 
 ------------------------------------------------------------
 -- Keybindings
@@ -71,32 +71,41 @@ myKeys :: [(String, X ())]
 myKeys =
   [ -- Apps
     ("M-<Return>", spawn "kitty")
-  , ("M-d", spawn "dmenu_run")
-  , ("M-b", spawn "google-chrome-stable")
+  , ("M-d",        spawn "dmenu_run")
+  , ("M-b",        spawn "google-chrome-stable")
 
     -- Window
-  , ("M-q", kill)
-  , ("M-S-q", io exitSuccess)
+  , ("M-q",        kill)
+  , ("M-S-q",      io exitSuccess)
 
     -- Layouts
-  , ("M-<Space>", sendMessage NextLayout)
+  , ("M-<Space>",  sendMessage NextLayout)
 
     -- Focus
-  , ("M-j", windows W.focusDown)
-  , ("M-k", windows W.focusUp)
-  , ("M-m", windows W.focusMaster)
+  , ("M-j",        windows W.focusDown)
+  , ("M-k",        windows W.focusUp)
+  , ("M-m",        windows W.focusMaster)
 
     -- Swap
-  , ("M-S-j", windows W.swapDown)
-  , ("M-S-k", windows W.swapUp)
+  , ("M-S-j",      windows W.swapDown)
+  , ("M-S-k",      windows W.swapUp)
 
     -- Resize
-  , ("M-h", sendMessage Shrink)
-  , ("M-l", sendMessage Expand)
+  , ("M-h",        sendMessage Shrink)
+  , ("M-l",        sendMessage Expand)
 
-    -- Reload
-  , ("M-S-r", spawn "xmonad --recompile && xmonad --restart")
+    -- Reload XMonad
+  , ("M-S-r",      spawn "xmonad --recompile && xmonad --restart")
 
-    -- Screenshot
-  , ("<Print>", spawn "scrot ~/Pictures/screenshots/%Y-%m-%d-%H%M%S.png")
+    -- Screenshots
+  , ("<Print>",    spawn "scrot ~/Pictures/screenshots/%Y-%m-%d-%H%M%S.png")
+
+    -- Volume keys
+  , ("<XF86AudioRaiseVolume>", spawn "pamixer -i 5")
+  , ("<XF86AudioLowerVolume>", spawn "pamixer -d 5")
+  , ("<XF86AudioMute>",        spawn "pamixer -t")
+
+    -- Brightness keys
+  , ("<XF86MonBrightnessUp>",   spawn "brightnessctl set +5%")
+  , ("<XF86MonBrightnessDown>", spawn "brightnessctl set 5%-")
   ]
