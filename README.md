@@ -1,7 +1,7 @@
 # Gruvnode
 
-🇩🇪 **Minimaler Debian-13-XMonad-Setup für das ThinkPad T480**  
-🇬🇧 **Minimal Debian 13 XMonad setup for the ThinkPad T480**
+🇩🇪 **Minimaler Debian-13-XMonad-Setup für mein ThinkPad T480**  
+🇬🇧 **Minimal Debian 13 XMonad setup for my ThinkPad T480**
 
 ---
 
