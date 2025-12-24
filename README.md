@@ -87,12 +87,27 @@ There is no guarantee of suitability for other systems.
 
 ```text
 gruvnode/
-├── debian/
-│   └── debian-xmonad-gaming.sh
-├── wow-classic/
-│   ├── settings.md
-│   └── addons.md
+├── README.md
+│
+├── install.sh
+│
+├── xmonad/
+│   ├── xmonad.hs
+│   └── README.md
+│
+├── kitty/
+│   └── kitty.conf
+│
+├── assets/
+│   └── wallpaper/
+│       └── 1.png
+│
 ├── docs/
-│   └── thermals-and-power.md
-└── README.md
+│   ├── hardware.md
+│   ├── tweaks.md
+│   └── troubleshooting.md
+│
+└── wow-classic/
+    ├── settings.md
+    └── addons.md
 
