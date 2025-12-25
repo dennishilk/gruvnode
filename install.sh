@@ -116,11 +116,27 @@ fi
 # ─────────────────────────────────────────────
 # T480 tweaks
 # ─────────────────────────────────────────────
-if ask "Apply T480 performance & stability tweaks?"; then
-  run "sudo apt install -y linux-cpupower thermald"
-  run "echo 'GOVERNOR=\"performance\"' | sudo tee /etc/default/cpupower"
-  run "sudo systemctl enable cpupower"
-  run "sudo systemctl restart cpupower"
+# CPU governor via systemd oneshot
+run "sudo apt install -y linux-cpupower thermald"
+
+run "sudo tee /etc/systemd/system/cpupower-performance.service <<'EOF'
+[Unit]
+Description=Set CPU governor to performance
+After=multi-user.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/cpupower frequency-set -g performance
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+EOF"
+
+  run "sudo systemctl daemon-reload"
+  run "sudo systemctl enable cpupower-performance.service"
+  run "sudo systemctl start cpupower-performance.service"
+
   run "sudo systemctl enable thermald"
 
   run "echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf"
