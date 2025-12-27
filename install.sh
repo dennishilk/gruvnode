@@ -92,12 +92,11 @@ deploy_configs() {
     return
   fi
 
-  mkdir -p ~/.xmonad
-  mkdir -p ~/.config/kitty
-  mkdir -p ~/.config/fish
-  mkdir -p ~/Pictures/wallpapers
-  mkdir -p ~/Pictures/screenshots
-
+  mkdir -p "$HOME/.xmonad" "$HOME/.config/kitty" "$HOME/Pictures/wallpapers" "$HOME/Pictures/screenshots"
+  cp ./xmonad/xmonad.hs "$HOME/.xmonad/xmonad.hs"
+  cp ./kitty/kitty.conf "$HOME/.config/kitty/kitty.conf"
+  cp ./assets/wallpaper/1.png "$HOME/Pictures/wallpapers/1.png"
+  
   cp ./xmonad/xmonad.hs ~/.xmonad/xmonad.hs
   cp ./kitty/kitty.conf ~/.config/kitty/kitty.conf
   cp ./assets/wallpaper/1.png ~/Pictures/wallpapers/1.png
