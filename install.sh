@@ -1,194 +1,90 @@
 #!/usr/bin/env bash
-set -e
+set -euo pipefail
 
-# ==========================================================
-# Gruvnode – Debian 13 XMonad Setup (ThinkPad T480)
-# ==========================================================
+REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-DRY_RUN=false
-INSTALL_ALL=false
+PACKAGES=(
+  xorg
+  xinit
+  xmonad
+  xmobar
+  kitty
+  tlp
+  brightnessctl
+  picom
+  nitrogen
+  dmenu
+  fonts-jetbrains-mono
+  pulseaudio-utils
+  build-essential
+  ghc
+  xbacklight
+  x11-xserver-utils
+  xserver-xorg-video-intel
+  xserver-xorg-input-libinput
+  libghc-xmonad-dev
+  libghc-xmonad-contrib-dev
+)
 
-# --------------------------
-# Helpers
-# --------------------------
-ask() {
-  read -rp "$1 [y/N]: " answer
-  [[ "$answer" =~ ^[Yy]$ ]]
-}
+echo "==> Installing required packages"
+sudo apt update
+sudo apt install -y "${PACKAGES[@]}"
 
-run() {
-  if $DRY_RUN; then
-    echo "[DRY-RUN] $*"
-  else
-    eval "$@"
-  fi
-}
+echo "==> Creating user config directories"
+mkdir -p "$HOME/.xmonad" "$HOME/.config/xmobar" "$HOME/.config/kitty"
 
-step() {
-  local prompt="$1"
-  local func="$2"
-  if $INSTALL_ALL || ask "$prompt"; then
-    $func
-  fi
-}
+echo "==> Copying XMonad/Xmobar/Kitty/Xinit configs"
+cp "$REPO_DIR/configs/xmonad/xmonad.hs" "$HOME/.xmonad/xmonad.hs"
+cp "$REPO_DIR/configs/xmonad/build.sh" "$HOME/.xmonad/build.sh"
+cp "$REPO_DIR/configs/xmobar/xmobarrc" "$HOME/.config/xmobar/xmobarrc"
+cp "$REPO_DIR/configs/kitty/kitty.conf" "$HOME/.config/kitty/kitty.conf"
+cp "$REPO_DIR/configs/xinit/xinitrc" "$HOME/.xinitrc"
 
-# --------------------------
-# Dry-Run handling
-# --------------------------
-if ask "Enable DRY-RUN mode (no changes will be made)?"; then
-  DRY_RUN=true
-  echo ">>> DRY-RUN ENABLED"
-fi
+chmod +x "$REPO_DIR/configs/xmonad/build.sh"
+chmod +x "$HOME/.xmonad/build.sh"
+chmod +x "$REPO_DIR/configs/system/powertweaks.sh"
+chmod +x "$HOME/.xinitrc"
 
-if $DRY_RUN; then
-  if ask "After DRY-RUN, install EVERYTHING automatically (INSTALL ALL)?"; then
-    INSTALL_ALL=true
-  fi
-fi
+echo "==> Deploying system tuning files"
+sudo cp "$REPO_DIR/configs/system/tlp.conf" /etc/tlp.conf
+sudo mkdir -p /etc/X11/xorg.conf.d
+sudo install -m 0644 "$REPO_DIR/configs/system/intel.conf" /etc/X11/xorg.conf.d/20-intel.conf
+sudo install -m 0755 "$REPO_DIR/configs/system/powertweaks.sh" /usr/local/sbin/powertweaks.sh
 
-if ! sudo -v; then
-  echo "This script requires sudo privileges."
-  exit 1
-fi
+echo "==> Configuring touchpad + TrackPoint defaults"
+sudo tee /etc/X11/xorg.conf.d/30-thinkpad-input.conf > /dev/null <<'INPUT'
+Section "InputClass"
+  Identifier "Touchpad defaults"
+  MatchIsTouchpad "on"
+  Driver "libinput"
+  Option "NaturalScrolling" "false"
+  Option "Tapping" "on"
+  Option "DisableWhileTyping" "on"
+EndSection
 
-echo "== Gruvnode Debian 13 XMonad Setup =="
+Section "InputClass"
+  Identifier "TrackPoint defaults"
+  MatchProduct "TrackPoint"
+  Driver "libinput"
+  Option "AccelSpeed" "0.6"
+EndSection
+INPUT
 
-# ==========================================================
-# Functions
-# ==========================================================
+echo "==> Configuring logind power handling (lid suspend, no DM required)"
+sudo mkdir -p /etc/systemd/logind.conf.d
+sudo tee /etc/systemd/logind.conf.d/thinkpad-power.conf > /dev/null <<'LOGIND'
+[Login]
+HandleLidSwitch=suspend
+HandleLidSwitchExternalPower=suspend
+HandleLidSwitchDocked=ignore
+LOGIND
 
-enable_repos() {
-  run "sudo sed -i 's/main/main contrib non-free non-free-firmware/' /etc/apt/sources.list"
-  run "sudo apt update"
-}
-
-install_base() {
-  run "sudo apt install --no-install-recommends -y \
-    xorg xinit dbus-x11 \
-    network-manager \
-    lightdm lightdm-gtk-greeter \
-    pipewire pipewire-audio wireplumber alsa-utils \
-    firmware-misc-nonfree \
-    mesa-vulkan-drivers intel-media-va-driver \
-    xserver-xorg-video-intel \
-    fonts-dejavu fonts-jetbrains-mono \
-    git curl unzip wget"
-
-  run "sudo systemctl enable NetworkManager"
-  run "sudo systemctl enable lightdm"
-}
-
-install_xmonad() {
-  run "sudo apt install --no-install-recommends -y \
-    xmonad xmobar suckless-tools \
-    ghc libghc-xmonad-dev libghc-xmonad-contrib-dev \
-    kitty dmenu feh scrot \
-    pamixer brightnessctl"
-}
-
-deploy_configs() {
-  if $DRY_RUN; then
-    echo "[DRY-RUN] deploy xmonad.hs, kitty.conf, wallpaper"
-    return
-  fi
-
-  mkdir -p "$HOME/.xmonad" "$HOME/.config/kitty" "$HOME/Pictures/wallpapers" "$HOME/Pictures/screenshots"
-  cp ./xmonad/xmonad.hs "$HOME/.xmonad/xmonad.hs"
-  cp ./kitty/kitty.conf "$HOME/.config/kitty/kitty.conf"
-  cp ./assets/wallpaper/1.png "$HOME/Pictures/wallpapers/1.png"
-  
-  cp ./xmonad/xmonad.hs ~/.xmonad/xmonad.hs
-  cp ./kitty/kitty.conf ~/.config/kitty/kitty.conf
-  cp ./assets/wallpaper/1.png ~/Pictures/wallpapers/1.png
-}
-
-install_steam() {
-  run "sudo dpkg --add-architecture i386"
-  run "sudo apt update"
-  run "sudo apt install -y steam"
-}
-
-install_fish_fastfetch() {
-  run "sudo apt install -y fish fastfetch"
-
-  if $DRY_RUN; then
-    echo "[DRY-RUN] configure fish + fastfetch"
-    return
-  fi
-
-  cat > ~/.config/fish/config.fish <<'EOF'
-if status is-interactive
-    fastfetch
-end
-EOF
-
-  chsh -s /usr/bin/fish
-}
-
-enable_zram() {
-  run "sudo apt install -y zram-tools"
-  run "sudo sed -i 's/#ALGO=.*/ALGO=zstd/' /etc/default/zramswap"
-  run "sudo sed -i 's/#PERCENT=.*/PERCENT=25/' /etc/default/zramswap"
-  run "sudo systemctl enable zramswap"
-}
-
-t480_tweaks() {
-  run "sudo apt install -y linux-cpupower thermald"
-
-  run "sudo tee /etc/systemd/system/cpupower-performance.service <<'EOF'
-[Unit]
-Description=Set CPU governor to performance
-After=multi-user.target
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/cpupower frequency-set -g performance
-RemainAfterExit=yes
-
-[Install]
-WantedBy=multi-user.target
-EOF"
-
-  run "sudo systemctl daemon-reload"
-  run "sudo systemctl enable cpupower-performance.service"
-  run "sudo systemctl start cpupower-performance.service"
-  run "sudo systemctl enable thermald"
-
-  run "echo 'vm.swappiness=10' | sudo tee /etc/sysctl.d/99-swappiness.conf"
-
-  run "sudo mkdir -p /etc/systemd/journald.conf.d"
-  run "echo -e '[Journal]\nSystemMaxUse=200M' | sudo tee /etc/systemd/journald.conf.d/limit.conf"
-
-  run "sudo tee /etc/NetworkManager/conf.d/wifi-powersave.conf <<'EOF'
-[connection]
-wifi.powersave = 2
-EOF"
-
-  run "sudo systemctl restart NetworkManager"
-}
-
-cleanup_system() {
-  run "sudo apt autoremove -y"
-  run "sudo apt clean"
-}
-
-# ==========================================================
-# Execution
-# ==========================================================
-
-step "Enable contrib / non-free repositories?" enable_repos
-step "Install base system (X11, LightDM, Audio, Network)?" install_base
-step "Install XMonad, Kitty, dmenu and build dependencies?" install_xmonad
-step "Deploy Gruvnode configs (xmonad, kitty, wallpaper)?" deploy_configs
-step "Install Steam (enable i386)?" install_steam
-step "Install fish shell and fastfetch?" install_fish_fastfetch
-step "Enable zram?" enable_zram
-step "Apply T480 performance & stability tweaks?" t480_tweaks
-step "Run cleanup?" cleanup_system
+echo "==> Enabling TLP and applying power tweaks"
+sudo systemctl enable tlp
+sudo systemctl restart tlp
+sudo /usr/local/sbin/powertweaks.sh
 
 echo
-echo "============================================"
-$DRY_RUN && echo "DRY-RUN completed — no changes were made."
-echo "DONE. Reboot recommended."
-echo "LightDM → Session → XMonad"
-echo "============================================"
+echo "Installation complete."
+echo "Add 'exec xmonad' to ~/.xinitrc if missing"
+echo "Run startx"
