@@ -4,14 +4,14 @@ set -eu
 export XDG_CURRENT_DESKTOP=XMonad
 export XDG_SESSION_DESKTOP=xmonad
 
-# TrackPoint + touchpad tuning for ThinkPad T480
-xinput --set-prop "TPPS/2 Elan TrackPoint" "libinput Accel Speed" 0.6 2>/dev/null || true
-xinput --set-prop "ELAN1200:00 04F3:3098 Touchpad" "libinput Natural Scrolling Enabled" 0 2>/dev/null || true
-xinput --set-prop "ELAN1200:00 04F3:3098 Touchpad" "libinput Tapping Enabled" 1 2>/dev/null || true
-xinput --set-prop "ELAN1200:00 04F3:3098 Touchpad" "libinput Disable While Typing Enabled" 1 2>/dev/null || true
+setxkbmap de -option caps:escape
 
 if [ -f "$HOME/.Xresources" ]; then
   xrdb -merge "$HOME/.Xresources"
+fi
+
+if command -v feh >/dev/null 2>&1; then
+  feh --bg-fill "$HOME/.local/share/wallpapers/gruvnode.jpg"
 fi
 
 exec xmonad

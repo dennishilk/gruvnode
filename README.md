@@ -1,47 +1,36 @@
 # gruvnode
 
-A minimal, production-ready Debian 13 (Trixie) XMonad setup for the **Lenovo ThinkPad T480**.
+Debian 13 (Trixie) + XMonad for the **Lenovo ThinkPad T480**, designed for:
 
-Boot flow is intentionally simple and stable:
+- X11 only
+- no display manager
+- clean TTY-first workflow (`startx`)
+- minimal but polished daily-driver setup
 
-**Boot → TTY login → `startx` → XMonad session**
+Boot flow:
 
-No display manager is used.
+```text
+Boot -> TTY login -> startx -> XMonad
+```
 
-## System overview
+## Why no display manager?
 
-- **OS**: Debian 13 (Trixie)
-- **Window manager**: XMonad (X11)
-- **Status bar**: Xmobar
-- **Terminal**: Kitty
-- **Compositor**: Picom (lightweight, optional)
-- **Wallpaper**: Nitrogen restore
-- **Power management**: TLP + custom powertweaks
-- **Startup method**: `startx` from TTY
+This project intentionally avoids a display manager to keep the session simple and debuggable:
 
-## Hardware target
+- fewer moving parts during boot/login
+- easier troubleshooting from pure TTY
+- lower background overhead
+- predictable behavior after suspend/resume
 
-- **Device**: Lenovo ThinkPad T480
-- **CPU**: Intel (8th gen U-series friendly tuning)
-- **GPU**: Intel UHD Graphics (TearFree + SNA + DRI3)
-
-## Why no display manager
-
-This repo deliberately avoids display managers to keep:
-
-- lower boot complexity
-- fewer background services
-- easier debugging from pure TTY
-- predictable behavior on suspend/resume
-
-`systemd-logind` handles power actions such as lid-close suspend.
-
-## Repository structure
+## Repository layout
 
 ```text
 gruvnode/
 ├── install.sh
 ├── README.md
+├── assets/
+│   └── wallpapers/
+│       └── example-gruvnode.jpg
 ├── configs/
 │   ├── xmonad/
 │   │   ├── xmonad.hs
@@ -52,129 +41,139 @@ gruvnode/
 │   │   └── kitty.conf
 │   ├── xinit/
 │   │   └── xinitrc
+│   ├── picom/
+│   │   └── picom.conf
 │   └── system/
 │       ├── tlp.conf
 │       ├── powertweaks.sh
-│       └── intel.conf
+│       ├── intel.conf
+│       └── input.conf
 ```
 
-## What is configured
+## What you get
 
-### XMonad
+- **Reliable xmobar integration** via `withEasySB` + `statusBarProp` in XMonad.
+- **Kitty** with a stable, gruvbox-ish configuration.
+- **Wallpaper handling** with `feh` and a bundled example wallpaper copied to:
+  - `~/.local/share/wallpapers/gruvnode.jpg`
+- **ThinkPad power tuning** with TLP + safe sysctl tweaks.
+- **Intel Xorg tuning** (`TearFree`, `SNA`, `DRI3`).
+- **Touchpad + TrackPoint defaults** tuned for laptop usability.
 
-- EWMH + fullscreen support
-- tiled layouts with spacing
-- no borders on fullscreen
-- `Super` as modifier
-- `kitty` as terminal, `dmenu` launcher
-- browser shortcut: `Super + b`
-- restart: `Super + Shift + r`
-- quit: `Super + Shift + q`
-- media keys via `amixer`
-- brightness keys via `brightnessctl`
-- startupHook launches:
-  - Xmobar
-  - Picom
-  - German keyboard layout (`setxkbmap de`)
-  - Nitrogen wallpaper restore
-
-### Xmobar
-
-Minimal dark ThinkPad style:
-
-- **left**: workspaces
-- **center**: focused window title
-- **right**: CPU, memory, battery, UTC time
-- font: JetBrainsMono Nerd Font
-
-### Kitty
-
-- JetBrainsMono Nerd Font
-- Gruvbox-like dark palette
-- 0.90 background transparency
-- cursor blink disabled
-- extended scrollback
-- bright bold colors enabled
-
-### ThinkPad optimizations
-
-- TLP tuned for battery-first usage
-- CPU governor powersave on battery
-- turbo enabled on AC
-- USB autosuspend enabled
-- Wi-Fi power saving enabled
-- Intel graphics TearFree + SNA + DRI3
-- touchpad + TrackPoint defaults:
-  - natural scrolling off
-  - tap-to-click on
-  - disable while typing on
-  - TrackPoint acceleration tuned
-- lid close suspend via logind override
-
-## Installation
+## Install
 
 ```bash
 chmod +x install.sh
 ./install.sh
 ```
 
-The installer will:
+The installer is idempotent and safe to re-run.
 
-1. Install required packages.
-2. Copy user configs into:
-   - `~/.xmonad/xmonad.hs`
+It will:
+
+1. Install required packages (`xorg`, `xinit`, `xmonad`, `xmobar`, `kitty`, `dmenu`, `feh`, `picom`, `tlp`, etc.).
+2. Copy user configs to:
+   - `~/.config/xmonad/xmonad.hs`
    - `~/.config/xmobar/xmobarrc`
    - `~/.config/kitty/kitty.conf`
+   - `~/.config/picom/picom.conf`
    - `~/.xinitrc`
-3. Deploy system files:
-   - `/etc/tlp.conf`
+   - `~/.local/share/wallpapers/gruvnode.jpg`
+3. Install system configs to:
    - `/etc/X11/xorg.conf.d/20-intel.conf`
-   - `/etc/X11/xorg.conf.d/30-thinkpad-input.conf`
-   - `/etc/systemd/logind.conf.d/thinkpad-power.conf`
+   - `/etc/X11/xorg.conf.d/30-input.conf`
+   - `/etc/tlp.conf`
    - `/usr/local/sbin/powertweaks.sh`
-4. Enable and start TLP.
-5. Apply additional kernel/sysctl battery tweaks.
+4. Enable/start TLP and apply additional power tweaks.
+5. Run `xmonad --recompile` once during install.
 
-After install:
+Then:
 
 ```bash
+reboot
+# login on TTY
 startx
 ```
 
-## Rebuild xmonad
+## XMonad keybinds
+
+- `Super + Enter`: open Kitty
+- `Super + d`: launch dmenu
+- `Super + b`: open browser (`xdg-open`)
+- `Super + Shift + c`: recompile XMonad
+- `Super + Shift + r`: recompile + restart XMonad
+- `Super + Shift + q`: quit XMonad
+- Brightness keys: `brightnessctl`
+- Audio keys: `amixer`
+
+## Power tuning notes (ThinkPad T480)
+
+`configs/system/tlp.conf`:
+
+- battery-first defaults when unplugged
+- better performance when plugged in
+- Wi-Fi power savings on battery
+- USB autosuspend and PCIe ASPM tuning
+
+`configs/system/powertweaks.sh` adds safe VM tuning:
+
+- `vm.dirty_writeback_centisecs`
+- `vm.dirty_background_ratio`
+- `vm.dirty_ratio`
+- `vm.laptop_mode`
+
+All settings are commented and can be adjusted.
+
+## Xmobar reliability / troubleshooting
+
+### Symptom
+
+> “Xmobar only appears when running `xmobar --recompile`, then disappears.”
+
+### Cause
+
+`xmobar --recompile` only compiles xmobar and exits. It is not a long-running launcher command.
+
+### Correct behavior in this repo
+
+Xmobar is started by XMonad itself via:
+
+- `statusBarProp "xmobar -x 0 ~/.config/xmobar/xmobarrc"`
+- `withEasySB ... defToggleStrutsKey`
+
+This makes xmobar persist as part of the XMonad session lifecycle.
+
+### Checks
+
+- Verify xmonad config path: `~/.config/xmonad/xmonad.hs`
+- Recompile manually if needed:
+  ```bash
+  xmonad --recompile
+  xmonad --restart
+  ```
+- Check logs/errors:
+  - `.xsession-errors`
+  - `~/.xmonad/xmonad.errors` (or distro-specific XMonad state path)
+
+## Updating / re-running installer
+
+Any time you pull updates:
 
 ```bash
-chmod +x ~/.xmonad/build.sh
-~/.xmonad/build.sh
+git pull
+./install.sh
 ```
 
-Or directly:
-
-```bash
-xmonad --recompile && xmonad --restart
-```
-
-## Power optimization notes
-
-TLP handles dynamic policy based on AC/BAT. `powertweaks.sh` adds aggressive laptop-friendly VM behavior:
-
-- lower swappiness
-- lower cache pressure
-- delayed writeback tuning
-- laptop mode enabled
-- Intel pstate active mode where available
-
-This combination aims for low heat, stable suspend/resume, and longer battery runtime without heavy daemons.
+Then restart XMonad or reboot.
 
 ## Screenshots
 
-> Placeholder: add screenshots of desktop, terminal, and tiled layout.
+Placeholder section:
 
-## Philosophy
+- add your desktop screenshot(s) here after first boot.
 
-- minimal
-- stable
-- keyboard-driven
-- ThinkPad-native
-- no bloat
-- understandable and maintainable
+## Notes
+
+- `nm-applet` autostart is optional and only runs when present.
+- picom autostart is optional; if you see issues, comment out its startup line in `xmonad.hs`.
+- replace `assets/wallpapers/example-gruvnode.jpg` (text-only placeholder in-repo) with your own wallpaper image if preferred.
