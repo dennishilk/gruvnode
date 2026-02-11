@@ -52,7 +52,7 @@ gruvnode/
 
 ## What you get
 
-- **Reliable xmobar integration** via `withEasySB` + `statusBarProp` in XMonad.
+- **Reliable xmobar integration** via `spawnPipe` + `dynamicLogWithPP` in XMonad.
 - **Kitty** with a stable, gruvbox-ish configuration.
 - **Wallpaper handling** with `feh` and a bundled example wallpaper copied to:
   - `~/.local/share/wallpapers/gruvnode.jpg`
@@ -95,12 +95,13 @@ reboot
 startx
 ```
 
+`xmobar` appears automatically after `startx` because XMonad launches it via `spawnPipe`.
+
 ## XMonad keybinds
 
 - `Super + Enter`: open Kitty
 - `Super + d`: launch dmenu
-- `Super + b`: open browser (`xdg-open`)
-- `Super + Shift + c`: recompile XMonad
+- `Super + b`: open Firefox
 - `Super + Shift + r`: recompile + restart XMonad
 - `Super + Shift + q`: quit XMonad
 - Brightness keys: `brightnessctl`
@@ -136,12 +137,9 @@ All settings are commented and can be adjusted.
 
 ### Correct behavior in this repo
 
-Xmobar is started by XMonad itself via:
+Xmobar is started by XMonad itself via `spawnPipe`, and workspace/title updates are pushed with `dynamicLogWithPP`.
 
-- `statusBarProp "xmobar -x 0 ~/.config/xmobar/xmobarrc"`
-- `withEasySB ... defToggleStrutsKey`
-
-This makes xmobar persist as part of the XMonad session lifecycle.
+This makes xmobar persist as part of the XMonad session lifecycle without relying on removed/deprecated helper hooks.
 
 ### Checks
 
@@ -176,4 +174,4 @@ Placeholder section:
 
 - `nm-applet` autostart is optional and only runs when present.
 - picom autostart is optional; if you see issues, comment out its startup line in `xmonad.hs`.
-- replace `assets/wallpapers/example-gruvnode.jpg` (text-only placeholder in-repo) with your own wallpaper image if preferred.
+- replace `assets/wallpapers/example-gruvnode.jpg` with your own wallpaper image if preferred.

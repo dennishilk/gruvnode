@@ -4,14 +4,10 @@ set -eu
 export XDG_CURRENT_DESKTOP=XMonad
 export XDG_SESSION_DESKTOP=xmonad
 
-setxkbmap de -option caps:escape
-
 if [ -f "$HOME/.Xresources" ]; then
   xrdb -merge "$HOME/.Xresources"
 fi
 
-if command -v feh >/dev/null 2>&1; then
-  feh --bg-fill "$HOME/.local/share/wallpapers/gruvnode.jpg"
-fi
-
+setxkbmap de -option caps:escape
+feh --bg-fill ~/.local/share/wallpapers/gruvnode.jpg &
 exec xmonad
