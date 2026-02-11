@@ -1,224 +1,180 @@
-# Gruvnode
+# gruvnode
 
-🇩🇪 **Minimaler Debian-13-XMonad-Setup für mein ThinkPad T480**  
-🇬🇧 **Minimal Debian 13 XMonad setup for my ThinkPad T480**
+A minimal, production-ready Debian 13 (Trixie) XMonad setup for the **Lenovo ThinkPad T480**.
 
----
+Boot flow is intentionally simple and stable:
 
-## 🇩🇪 Beschreibung
+**Boot → TTY login → `startx` → XMonad session**
 
-**Gruvnode** ist ein bewusst minimal gehaltener **Debian-13-Setup für das ThinkPad T480**, aufgebaut rund um **XMonad (X11)**.  
-Der Fokus liegt auf **Stabilität**, **niedrigem Ressourcenverbrauch** und **vorhersagbarem Verhalten** – auch wenn das System längere Zeit nicht genutzt wird.
+No display manager is used.
 
-Dieses Repository dient außerdem als **persönliches System-Backup und Referenz**.  
-Es dokumentiert, wie das System installiert, konfiguriert und reproduzierbar neu aufgebaut werden kann.
+## System overview
 
----
+- **OS**: Debian 13 (Trixie)
+- **Window manager**: XMonad (X11)
+- **Status bar**: Xmobar
+- **Terminal**: Kitty
+- **Compositor**: Picom (lightweight, optional)
+- **Wallpaper**: Nitrogen restore
+- **Power management**: TLP + custom powertweaks
+- **Startup method**: `startx` from TTY
 
-## 🇬🇧 Description
+## Hardware target
 
-**Gruvnode** is a deliberately minimal **Debian 13 setup for the ThinkPad T480**, built around **XMonad (X11)**.  
-The focus is on **stability**, **low resource usage**, and **predictable behavior**, even after long periods of inactivity.
+- **Device**: Lenovo ThinkPad T480
+- **CPU**: Intel (8th gen U-series friendly tuning)
+- **GPU**: Intel UHD Graphics (TearFree + SNA + DRI3)
 
-This repository also serves as a **personal system backup and reference**.  
-It documents how the system is installed, configured, and rebuilt from scratch.
+## Why no display manager
 
----
+This repo deliberately avoids display managers to keep:
 
-## 🎯 Goals / Ziele
+- lower boot complexity
+- fewer background services
+- easier debugging from pure TTY
+- predictable behavior on suspend/resume
 
-- Debian 13 minimal (no desktop environment)
-- XMonad on X11 (no Wayland)
-- Optimized for Intel iGPU (i5-8250U)
-- Low idle RAM usage (~300–400 MB)
-- Stable frametimes for lightweight gaming (e.g. WoW Classic)
-- Simple, documented and reproducible setup
-- No visual bloat, no unnecessary background services
+`systemd-logind` handles power actions such as lid-close suspend.
 
----
-
-## 🧠 System Philosophy / System-Philosophie
-
-🇩🇪  
-Dieses Repository ist **keine allgemeine Dotfiles-Sammlung**.  
-Es bildet einen **konkreten Systemzustand** ab:
-
-- Installationsskripte
-- Hardware-spezifische Entscheidungen
-- Minimale, bewusste Konfiguration
-
-Ziel ist es, das System auf derselben Hardware **jederzeit reproduzierbar** neu aufzusetzen.
-
-🇬🇧  
-This repository is **not a generic dotfiles collection**.  
-It represents a **documented system state**:
-
-- installation scripts
-- hardware-specific decisions
-- minimal and intentional configuration
-
-The goal is to **rebuild the system reliably** on the same hardware at any time.
-
----
-# XMonad Keybindings — Gruvnode
-
-🇩🇪 Kurzübersicht der wichtigsten Tastenkombinationen  
-🇬🇧 Quick overview of the most important keybindings
-
-**Mod key:** `Super` (Windows key)
-
----
-
-## 🚀 Applications / Anwendungen
-
-| Key | Action |
-|----|--------|
-| `Super + Enter` | Terminal (Kitty) |
-| `Super + D` | dmenu (Application launcher) |
-| `Super + B` | Google Chrome |
-
----
-
-## 🪟 Window Management / Fensterverwaltung
-
-| Key | Action |
-|----|--------|
-| `Super + Q` | Close focused window |
-| `Super + Shift + Q` | Exit XMonad (logout) |
-
----
-
-## 🧭 Focus / Fokus
-
-| Key | Action |
-|----|--------|
-| `Super + J` | Focus next window |
-| `Super + K` | Focus previous window |
-| `Super + M` | Focus master window |
-
----
-
-## 🔀 Swap Windows / Fenster tauschen
-
-| Key | Action |
-|----|--------|
-| `Super + Shift + J` | Swap window down |
-| `Super + Shift + K` | Swap window up |
-
----
-
-## 📐 Layout & Resize / Layout & Größe
-
-| Key | Action |
-|----|--------|
-| `Super + Space` | Cycle layouts |
-| `Super + H` | Shrink window |
-| `Super + L` | Expand window |
-
----
-
-## 🔄 XMonad Control
-
-| Key | Action |
-|----|--------|
-| `Super + Shift + R` | Recompile & restart XMonad |
-
----
-
-## 📸 Screenshots
-
-| Key | Action |
-|----|--------|
-| `Print` | Screenshot → `~/Pictures/screenshots/` |
-
----
-
-## 🔊 Volume / Lautstärke
-
-| Key | Action |
-|----|--------|
-| `XF86AudioRaiseVolume` | Volume +5 % |
-| `XF86AudioLowerVolume` | Volume −5 % |
-| `XF86AudioMute` | Toggle mute |
-
----
-
-## 🔆 Brightness / Helligkeit
-
-| Key | Action |
-|----|--------|
-| `XF86MonBrightnessUp` | Brightness +5 % |
-| `XF86MonBrightnessDown` | Brightness −5 % |
-
----
-
-## 📝 Notes / Hinweise
-
-🇩🇪  
-- Klassische, minimalistische XMonad-Keybindings  
-- Keine Wayland- oder Compositor-Abhängigkeiten  
-- Optimiert für Stabilität, geringe Latenz und lange Sessions  
-
-🇬🇧  
-- Classic, minimal XMonad keybindings  
-- No Wayland or compositor dependencies  
-- Optimized for stability, low latency and long sessions  
-
----
-
-**System:** Debian 13 + XMonad  
-**Hardware target:** ThinkPad T480 (Gruvnode)
-
-
-
-🖥️ Hardware Target / Zielhardware
-
-Lenovo ThinkPad T480
-
-Intel i5-8250U
-
-Intel UHD Graphics 620
-
-32 GB RAM
-
-Improved cooling (dGPU heatsink + graphite thermal pad)
-
-⚠️ Disclaimer
-
-🇩🇪
-Dieses Setup ist hardware-spezifisch und primär als persönliche Referenz gedacht.
-Es gibt keinen Anspruch auf universelle Einsetzbarkeit.
-
-🇬🇧
-This setup is hardware-specific and primarily intended as a personal reference.
-There is no guarantee of suitability for other systems.
-
-
-## 🧱 Repository Structure / Struktur
+## Repository structure
 
 ```text
 gruvnode/
-├── README.md
-│
 ├── install.sh
-│
-├── xmonad/
-│   ├── xmonad.hs
-│   └── README.md
-│
-├── kitty/
-│   └── kitty.conf
-│
-├── assets/
-│   └── wallpaper/
-│       └── 1.png
-│
-├── docs/
-│   ├── hardware.md
-│   ├── tweaks.md
-│   └── troubleshooting.md
-│
-└── wow-classic/
-    ├── settings.md
-    └── addons.md
+├── README.md
+├── configs/
+│   ├── xmonad/
+│   │   ├── xmonad.hs
+│   │   └── build.sh
+│   ├── xmobar/
+│   │   └── xmobarrc
+│   ├── kitty/
+│   │   └── kitty.conf
+│   ├── xinit/
+│   │   └── xinitrc
+│   └── system/
+│       ├── tlp.conf
+│       ├── powertweaks.sh
+│       └── intel.conf
+```
 
+## What is configured
+
+### XMonad
+
+- EWMH + fullscreen support
+- tiled layouts with spacing
+- no borders on fullscreen
+- `Super` as modifier
+- `kitty` as terminal, `dmenu` launcher
+- browser shortcut: `Super + b`
+- restart: `Super + Shift + r`
+- quit: `Super + Shift + q`
+- media keys via `amixer`
+- brightness keys via `brightnessctl`
+- startupHook launches:
+  - Xmobar
+  - Picom
+  - German keyboard layout (`setxkbmap de`)
+  - Nitrogen wallpaper restore
+
+### Xmobar
+
+Minimal dark ThinkPad style:
+
+- **left**: workspaces
+- **center**: focused window title
+- **right**: CPU, memory, battery, UTC time
+- font: JetBrainsMono Nerd Font
+
+### Kitty
+
+- JetBrainsMono Nerd Font
+- Gruvbox-like dark palette
+- 0.90 background transparency
+- cursor blink disabled
+- extended scrollback
+- bright bold colors enabled
+
+### ThinkPad optimizations
+
+- TLP tuned for battery-first usage
+- CPU governor powersave on battery
+- turbo enabled on AC
+- USB autosuspend enabled
+- Wi-Fi power saving enabled
+- Intel graphics TearFree + SNA + DRI3
+- touchpad + TrackPoint defaults:
+  - natural scrolling off
+  - tap-to-click on
+  - disable while typing on
+  - TrackPoint acceleration tuned
+- lid close suspend via logind override
+
+## Installation
+
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+The installer will:
+
+1. Install required packages.
+2. Copy user configs into:
+   - `~/.xmonad/xmonad.hs`
+   - `~/.config/xmobar/xmobarrc`
+   - `~/.config/kitty/kitty.conf`
+   - `~/.xinitrc`
+3. Deploy system files:
+   - `/etc/tlp.conf`
+   - `/etc/X11/xorg.conf.d/20-intel.conf`
+   - `/etc/X11/xorg.conf.d/30-thinkpad-input.conf`
+   - `/etc/systemd/logind.conf.d/thinkpad-power.conf`
+   - `/usr/local/sbin/powertweaks.sh`
+4. Enable and start TLP.
+5. Apply additional kernel/sysctl battery tweaks.
+
+After install:
+
+```bash
+startx
+```
+
+## Rebuild xmonad
+
+```bash
+chmod +x ~/.xmonad/build.sh
+~/.xmonad/build.sh
+```
+
+Or directly:
+
+```bash
+xmonad --recompile && xmonad --restart
+```
+
+## Power optimization notes
+
+TLP handles dynamic policy based on AC/BAT. `powertweaks.sh` adds aggressive laptop-friendly VM behavior:
+
+- lower swappiness
+- lower cache pressure
+- delayed writeback tuning
+- laptop mode enabled
+- Intel pstate active mode where available
+
+This combination aims for low heat, stable suspend/resume, and longer battery runtime without heavy daemons.
+
+## Screenshots
+
+> Placeholder: add screenshots of desktop, terminal, and tiled layout.
+
+## Philosophy
+
+- minimal
+- stable
+- keyboard-driven
+- ThinkPad-native
+- no bloat
+- understandable and maintainable
