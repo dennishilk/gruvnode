@@ -1,38 +1,15 @@
-Config
-  { font = "xft:JetBrainsMono Nerd Font:size=10:antialias=true:hinting=true"
-  , additionalFonts = []
-  , bgColor = "#1d2021"
-  , fgColor = "#ebdbb2"
-  , alpha = 235
-  , position = Top
-  , textOffset = -1
-  , iconOffset = -1
-  , lowerOnStart = True
-  , hideOnStart = False
-  , allDesktops = True
-  , overrideRedirect = True
-  , pickBroadest = False
-  , persistent = True
-  , sepChar = "%"
-  , alignSep = "}{"
-  , template = " %StdinReader% }{ %cpu% | %memory% | %battery% | %wireless% | %date% "
-  , commands =
-      [ Run StdinReader
-      , Run Cpu ["-t", "CPU <total>%", "-L", "20", "-H", "80", "--low", "#b8bb26", "--normal", "#ebdbb2", "--high", "#fb4934"] 20
-      , Run Memory ["-t", "RAM <usedratio>%"] 20
-      , Run BatteryP ["BAT0"]
-          [ "-t", "BAT <left>% <acstatus>"
-          , "-L", "20"
-          , "-H", "80"
-          , "--low", "#fb4934"
-          , "--normal", "#ebdbb2"
-          , "--high", "#b8bb26"
-          , "--"
-          , "-O", "⚡"
-          , "-o", ""
-          ]
-          50
-      , Run Wireless "wlp3s0" ["-t", "WiFi <quality>%"] 50
-      , Run Date "%a %d %b %Y | %H:%M" "date" 10
-      ]
-  }
+Config { font = "xft:JetBrainsMono Nerd Font-12"
+, bgColor = "#1a1b26"
+, fgColor = "#c0caf5"
+, position = Top
+, commands =
+    [ Run StdinReader
+    , Run Cpu ["-t", "CPU: <total>%"] 10
+    , Run Memory ["-t", "RAM: <usedratio>%"] 10
+    , Run Battery ["-t", "BAT: <left>%"] 50
+    , Run Date "%a %b %_d %H:%M" "date" 10
+    ]
+, sepChar = "%"
+, alignSep = "}{"
+, template = "%StdinReader% }{ %cpu% | %memory% | %battery% | %date%"
+}
