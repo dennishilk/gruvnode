@@ -1,0 +1,11 @@
+GRUVNODE WALLPAPER PLACEHOLDER
+==============================
+
+This repository keeps this file text-only on purpose so PR tooling that rejects
+binary assets can still create patches.
+
+Replace this file with your preferred wallpaper image and keep the same path:
+assets/wallpapers/example-gruvnode.jpg
+
+The installer copies it to:
+~/.local/share/wallpapers/gruvnode.jpg
