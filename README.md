@@ -1,5 +1,10 @@
 # Gruvnode
 
+![Arch Linux](https://img.shields.io/badge/Arch%20Linux-current-1793D1?logo=archlinux&logoColor=white)
+![XMonad](https://img.shields.io/badge/XMonad-window%20manager-5E5086?logo=haskell&logoColor=white)
+![ThinkPad](https://img.shields.io/badge/ThinkPad-X1%20Carbon-E2231A?logo=lenovo&logoColor=white)
+![X11](https://img.shields.io/badge/display-X11-111111?logo=x.org&logoColor=white)
+
 **Gruvnode** is my personal Linux workstation concept: a small, practical collection of notes and configuration that evolves with the laptop carrying it.
 
 The name belongs to the workstation setup, not to one specific machine. Hardware-specific configuration therefore lives in generation directories instead of at the repository root.
