@@ -1,0 +1,26 @@
+Config
+  { font = "xft:JetBrains Mono:size=9"
+  , additionalFonts = []
+  , border = NoBorder
+  , bgColor = "#1d2021"
+  , fgColor = "#ebdbb2"
+  , position = Top
+  , lowerOnStart = True
+  , pickBroadest = False
+  , persistent = True
+  , hideOnStart = False
+  , allDesktops = True
+  , overrideRedirect = True
+  , sepChar = "%"
+  , alignSep = "}{"
+  , commands =
+      [ Run StdinReader
+      , Run Cpu ["-t", "cpu <total>%"] 20
+      , Run Memory ["-t", "mem <usedratio>%"] 20
+      , Run Com "sh" ["-c", "$HOME/.local/bin/gruvnode-xmobar-battery"] "battery" 30
+      , Run Com "sh" ["-c", "$HOME/.local/bin/gruvnode-xmobar-network"] "network" 20
+      , Run Com "sh" ["-c", "$HOME/.local/bin/gruvnode-xmobar-volume"] "volume" 10
+      , Run Date "%a %d %b %H:%M" "date" 10
+      ]
+  , template = " %StdinReader% }{ %cpu%  %memory%  %battery%  %network%  %volume%  %date% "
+  }

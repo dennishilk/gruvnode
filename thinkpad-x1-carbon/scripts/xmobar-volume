@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+set -u
+
+if ! command -v wpctl >/dev/null 2>&1; then
+  printf 'vol n/a\n'
+  exit 0
+fi
+
+state="$(wpctl get-volume @DEFAULT_AUDIO_SINK@ 2>/dev/null || true)"
+
+if [[ -z "$state" ]]; then
+  printf 'vol n/a\n'
+elif [[ "$state" == *"[MUTED]"* ]]; then
+  printf 'vol muted\n'
+else
+  awk '{ printf "vol %d%%\n", $2 * 100 }' <<<"$state"
+fi
