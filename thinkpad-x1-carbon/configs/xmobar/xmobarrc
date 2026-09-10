@@ -15,12 +15,9 @@ Config
   , alignSep = "}{"
   , commands =
       [ Run XMonadLog
-      , Run Cpu ["-t", "cpu <total>%"] 20
-      , Run Memory ["-t", "mem <usedratio>%"] 20
       , Run Com "sh" ["-c", "$HOME/.local/bin/gruvnode-xmobar-battery"] "battery" 30
-      , Run Com "sh" ["-c", "$HOME/.local/bin/gruvnode-xmobar-network"] "network" 20
       , Run Com "sh" ["-c", "$HOME/.local/bin/gruvnode-xmobar-volume"] "volume" 10
-      , Run Date "%a %d %b %H:%M" "date" 10
+      , Run Date "%H:%M:%S" "date" 1
       ]
-  , template = " %XMonadLog% }{ %cpu%  %memory%  %battery%  %network%  %volume%  %date% "
+  , template = "}{ %date%  %battery%  %volume% "
   }
