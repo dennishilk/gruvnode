@@ -38,6 +38,66 @@ bash -n "$PROFILE_DIR/scripts/xmobar-network"
 bash -n "$PROFILE_DIR/scripts/xmobar-volume"
 pass "shell syntax"
 
+package_checks=(
+  xorg-server
+  xorg-xinit
+  xorg-xrandr
+  xf86-input-libinput
+  xmonad
+  xmonad-contrib
+  xmobar
+  rofi
+  picom
+  feh
+  kitty
+  fastfetch
+  obs-studio
+  pipewire
+  pipewire-audio
+  pipewire-pulse
+  wireplumber
+  pavucontrol
+  brightnessctl
+  networkmanager
+  network-manager-applet
+  bluez
+  bluez-utils
+  blueman
+  v4l-utils
+  scrot
+)
+
+for package in "${package_checks[@]}"; do
+  grep -Eq "^[[:space:]]+${package}[[:space:]]*$" "$PROFILE_DIR/install.sh" \
+    || fail "missing official package from installer: $package"
+done
+pass "required Arch package set"
+
+xmonad_checks=(
+  'Tall 1'
+  'noBorders Full'
+  'smartBorders'
+  'spacing 6'
+  'isFullscreen --> doFullFloat'
+  'isDialog --> doCenterFloat'
+  'spawnOnce "feh --no-fehbg --bg-fill'
+  'spawnOnce "picom --config'
+  'statusBarProp'
+  'withSB myStatusBar'
+)
+
+for check in "${xmonad_checks[@]}"; do
+  grep -Fq "$check" "$PROFILE_DIR/configs/xmonad/xmonad.hs" \
+    || fail "missing XMonad behavior: $check"
+done
+
+grep -Fq 'Run XMonadLog' "$PROFILE_DIR/configs/xmobar/xmobarrc" \
+  || fail "xmobar is not using property-based XMonad logging"
+if grep -Fq 'Run StdinReader' "$PROFILE_DIR/configs/xmobar/xmobarrc"; then
+  fail "xmobar should not use the pipe-based StdinReader path"
+fi
+pass "XMonad layout/manage/startup/status-bar behavior"
+
 grep -Fxq 'background_opacity 0.8' "$PROFILE_DIR/configs/kitty/kitty.conf" \
   || fail "Kitty opacity must be exactly 0.8"
 pass "Kitty opacity is exactly 0.8"

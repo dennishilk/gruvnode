@@ -4,7 +4,7 @@ set -euo pipefail
 PROFILE_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd -- "$PROFILE_DIR/.." && pwd)"
 BACKUP_ROOT="${XDG_STATE_HOME:-$HOME/.local/state}/gruvnode/backups"
-BACKUP_DIR="$BACKUP_ROOT/$(date +%Y%m%d-%H%M%S)"
+BACKUP_DIR="$BACKUP_ROOT/$(date +%Y%m%d-%H%M%S)-$$"
 BACKUP_USED=0
 
 PACKAGES=(

@@ -1,16 +1,15 @@
 import XMonad
 import qualified XMonad.StackSet as W
-import XMonad.Hooks.DynamicLog
 import XMonad.Hooks.EwmhDesktops (ewmh, ewmhFullscreen)
 import XMonad.Hooks.ManageDocks (avoidStruts, docks)
 import XMonad.Hooks.ManageHelpers (doCenterFloat, doFullFloat, isDialog, isFullscreen)
+import XMonad.Hooks.StatusBar (statusBarProp, withSB)
+import XMonad.Hooks.StatusBar.PP
 import XMonad.Layout.NoBorders (noBorders, smartBorders)
 import XMonad.Layout.Spacing (spacing)
 import XMonad.Util.EZConfig (additionalKeysP)
-import XMonad.Util.Run (spawnPipe)
 import XMonad.Util.SpawnOnce (spawnOnce)
 import System.Exit (exitSuccess)
-import System.IO (hPutStrLn)
 
 myTerminal :: String
 myTerminal = "kitty"
@@ -33,6 +32,18 @@ myStartupHook = do
   spawnOnce "feh --no-fehbg --bg-fill \"$HOME/.local/share/wallpapers/gruvnode-background.png\""
   spawnOnce "picom --config \"$HOME/.config/picom/picom.conf\""
   spawnOnce "/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1"
+
+myPP :: PP
+myPP =
+  xmobarPP
+    { ppCurrent = xmobarColor "#b8bb26" "" . wrap "[" "]"
+    , ppVisible = xmobarColor "#83a598" ""
+    , ppHidden = xmobarColor "#ebdbb2" ""
+    , ppHiddenNoWindows = xmobarColor "#665c54" ""
+    , ppTitle = xmobarColor "#d5c4a1" "" . shorten 60
+    , ppSep = "  "
+    , ppWsSep = " "
+    }
 
 myKeys :: [(String, X ())]
 myKeys =
@@ -61,8 +72,6 @@ myKeys =
 
 main :: IO ()
 main = do
-  xmobarHandle <- spawnPipe "xmobar \"$HOME/.config/xmobar/xmobarrc\""
-
   let baseConfig =
         def
           { terminal = myTerminal
@@ -73,21 +82,15 @@ main = do
           , layoutHook = myLayout
           , manageHook = myManageHook <+> manageHook def
           , startupHook = myStartupHook
-          , logHook =
-              dynamicLogWithPP
-                xmobarPP
-                  { ppOutput = hPutStrLn xmobarHandle
-                  , ppCurrent = xmobarColor "#b8bb26" "" . wrap "[" "]"
-                  , ppVisible = xmobarColor "#83a598" ""
-                  , ppHidden = xmobarColor "#ebdbb2" ""
-                  , ppHiddenNoWindows = xmobarColor "#665c54" ""
-                  , ppTitle = xmobarColor "#d5c4a1" "" . shorten 60
-                  , ppSep = "  "
-                  , ppWsSep = " "
-                  }
           }
 
+      myStatusBar =
+        statusBarProp
+          "xmobar \"$HOME/.config/xmobar/xmobarrc\""
+          (pure myPP)
+
   xmonad
+    . withSB myStatusBar
     . ewmhFullscreen
     . ewmh
     . docks

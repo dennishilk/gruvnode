@@ -14,7 +14,7 @@ Config
   , sepChar = "%"
   , alignSep = "}{"
   , commands =
-      [ Run StdinReader
+      [ Run XMonadLog
       , Run Cpu ["-t", "cpu <total>%"] 20
       , Run Memory ["-t", "mem <usedratio>%"] 20
       , Run Com "sh" ["-c", "$HOME/.local/bin/gruvnode-xmobar-battery"] "battery" 30
@@ -22,5 +22,5 @@ Config
       , Run Com "sh" ["-c", "$HOME/.local/bin/gruvnode-xmobar-volume"] "volume" 10
       , Run Date "%a %d %b %H:%M" "date" 10
       ]
-  , template = " %StdinReader% }{ %cpu%  %memory%  %battery%  %network%  %volume%  %date% "
+  , template = " %XMonadLog% }{ %cpu%  %memory%  %battery%  %network%  %volume%  %date% "
   }

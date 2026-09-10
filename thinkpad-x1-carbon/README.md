@@ -80,7 +80,7 @@ If `yay` already exists, the installer uses that existing workflow for `google-c
 
 The layouts are `Tall` and `Full`, with small spacing, smart borders and EWMH fullscreen support. Normal windows tile. Fullscreen windows full-float; EWMH dialogs, including normal OBS properties/source dialogs, are centered and floated.
 
-At session start XMonad applies the Gruvnode wallpaper, starts picom and starts the polkit authentication agent once. Xmobar is attached to XMonad's log output rather than being launched repeatedly from the startup hook.
+At session start XMonad applies the Gruvnode wallpaper, starts picom and starts the polkit authentication agent once. Xmobar is managed by XMonad's status-bar lifecycle and reads the `_XMONAD_LOG` property, so restart cleanup/startup stays in one place instead of relying on a fragile pipe.
 
 ## OBS and cameras
 
