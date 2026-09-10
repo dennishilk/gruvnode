@@ -1,69 +1,155 @@
-# ThinkPad X1 Carbon — current Gruvnode generation
+# ThinkPad X1 Carbon
 
-> **Status:** active Gruvnode target.
+This is the current Gruvnode: a ThinkPad X1 Carbon with 16 GB RAM running Arch Linux, X11 and XMonad.
 
-This directory represents the current Gruvnode machine: a **Lenovo ThinkPad X1 Carbon with 16 GB RAM**, intended to run **Arch Linux + XMonad** as a personal workstation and development laptop.
+The profile is deliberately boring in the useful sense. It sets up the desktop and everyday laptop tooling without carrying over the T480's old Intel Xorg or power-tuning assumptions.
 
-The profile is intentionally documentation-first at this stage. The exact X1 Carbon generation, CPU, graphics stack, display characteristics, audio hardware, webcam behavior, docking quirks, and battery-tuning requirements have not been audited here, so they are not guessed or inherited from the previous T480.
+## Stack
 
-## Known baseline
+- Arch Linux + X11
+- XMonad + xmobar
+- Rofi
+- Kitty
+- Picom
+- feh
+- Fastfetch
+- OBS Studio + V4L2 tools
+- PipeWire + WirePlumber
+- NetworkManager
+- BlueZ + Blueman
+- Google Chrome when an existing `yay` installation is available
 
-- Machine family: Lenovo ThinkPad X1 Carbon
-- Memory: 16 GB RAM
-- Distribution: Arch Linux
-- Primary window manager: XMonad
-- Role: current personal Gruvnode workstation / development laptop
+The canonical wallpaper lives at [`../assets/wallpapers/gruvnode-background.png`](../assets/wallpapers/gruvnode-background.png).
 
-## Bootstrap direction
+## Install
 
-The intended first installation flow is simple:
+Gruvnode is not an Arch installer. Start with a normal Arch installation, preferably using `archinstall`.
 
-1. Install Arch Linux using `archinstall`.
-2. Select XMonad during installation if the current `archinstall` profile makes that appropriate; otherwise finish the base Arch install and add XMonad afterwards.
-3. Boot the installed system and clone this repository.
-4. Use `thinkpad-x1-carbon/` as the hardware-specific base for the new machine.
-5. Reuse portable Gruvnode pieces only after reviewing them against Arch and the actual X1 hardware.
+1. Install Arch Linux. Select XMonad during `archinstall` if that fits the current installer flow.
+2. Boot into the installed system and log in on a TTY.
+3. Install Git if it is not already present:
+   ```bash
+   sudo pacman -S --needed git
+   ```
+4. Clone Gruvnode and enter this profile:
+   ```bash
+   git clone https://github.com/dennishilk/gruvnode.git
+   cd gruvnode/thinkpad-x1-carbon
+   ```
+5. Run:
+   ```bash
+   chmod +x install.sh
+   ./install.sh
+   ```
+6. Start the session:
+   ```bash
+   startx
+   ```
 
-Example handoff after the base OS is running:
+The installer updates Arch, installs the official package set with `pacman`, enables NetworkManager and Bluetooth, deploys the user configuration, links the shared Gruvnode wallpaper, and finishes with `xmonad --recompile`.
+
+Existing Gruvnode-managed user config files are backed up before they are replaced. Re-running the installer after a `git pull` is expected and does not overwrite unrelated files.
+
+Fastfetch is installed but is not injected into shell startup. Add `fastfetch` to your shell init yourself if you want it on every terminal login.
+
+### Google Chrome
+
+Chrome is the one intentional exception to the official-package-only path. Gruvnode does **not** install `yay` or another AUR helper.
+
+If `yay` already exists, the installer uses that existing workflow for `google-chrome`. If it does not exist, installation still succeeds and Chrome is left as a manual/AUR follow-up.
+
+## Keybindings
+
+| Key | Action |
+| --- | --- |
+| `Super + Return` | Kitty |
+| `Super + d` | Rofi |
+| `Super + b` | Google Chrome |
+| `Super + o` | OBS Studio |
+| `Super + q` | Close focused window |
+| `Super + Shift + q` | Exit XMonad |
+| `Super + Space` | Next layout |
+| `Super + j / k` | Focus down / up |
+| `Super + m` | Focus master |
+| `Super + Shift + j / k` | Swap down / up |
+| `Super + h / l` | Shrink / expand master area |
+| `Super + Shift + r` | Recompile and restart XMonad |
+| `Print` | Screenshot to `~/Pictures/Screenshots/` |
+| Volume keys | PipeWire volume via `wpctl` |
+| Brightness keys | Backlight via `brightnessctl` |
+
+The layouts are `Tall` and `Full`, with small spacing, smart borders and EWMH fullscreen support. Normal windows tile. Fullscreen windows full-float; EWMH dialogs, including normal OBS properties/source dialogs, are centered and floated.
+
+At session start XMonad applies the Gruvnode wallpaper, starts picom and starts the polkit authentication agent once. Xmobar is attached to XMonad's log output rather than being launched repeatedly from the startup hook.
+
+## OBS and cameras
+
+OBS Studio and `v4l-utils` are installed. A USB camera that appears as a normal V4L2 device can be selected in OBS as a Video Capture Device source. PipeWire/WirePlumber provide the audio side.
+
+No camera model, dock, webcam chipset or capture format is assumed here. Those still need to be checked on the actual X1 Carbon and whatever external camera is connected.
+
+Useful checks:
 
 ```bash
-git clone https://github.com/dennishilk/gruvnode.git
-cd gruvnode/thinkpad-x1-carbon
+v4l2-ctl --list-devices
+wpctl status
 ```
 
-There is deliberately no one-shot installer in this directory yet. Adding one before the hardware and package choices are validated would imply a level of completeness that does not exist.
+## Laptop behavior
 
-## Planned software direction
+This profile uses the standard Xorg modesetting path and libinput. It does not install the old T480 `xf86-video-intel` config or TLP tuning.
 
-Likely candidates for the active profile include:
+Power handling stays conservative: systemd/logind handles normal lid/suspend behavior and the kernel handles device power management. There is no second power-management daemon competing with that setup. Battery display in xmobar discovers the first `BAT*` power-supply device at runtime rather than assuming `BAT0`.
 
-- XMonad as the window manager
-- xmobar or an equivalent lightweight status bar, after review
-- Kitty as a terminal, if the existing user-level configuration still fits
-- a minimal X11 session around XMonad
-- common development and workstation tooling selected for Arch rather than copied from Debian package lists
-- the canonical Gruvnode wallpaper from `../assets/wallpapers/gruvnode-background.png`
+NetworkManager and Blueman are installed, but no extra tray is forced into xmobar. `nm-connection-editor` and `blueman-manager` are available when a GUI is useful.
 
-User-level T480 configuration under `../thinkpad-t480/configs/` can be treated as a source of ideas. System-level files are **not** migration defaults.
+For external displays, use `xrandr` until an actual dock/display layout is worth codifying.
 
-## Hardware validation before tuning
+## Updating
 
-Before adding machine-specific configuration, verify and document the actual hardware and behavior on this X1 Carbon. Useful checks include the machine generation/model data, CPU, graphics driver path, display modes, input devices, networking, audio, camera, suspend/resume, battery reporting, and any dock actually used.
+Update the repository/profile with:
 
-Only after those checks should the profile gain Xorg snippets, power-management policy, input overrides, or other hardware-specific tuning.
+```bash
+git pull
+./install.sh
+```
 
-## Migration rule
+For normal Arch updates, `pacman` is the official package manager. If you already use `yay`, your usual:
 
-Do not blindly copy these T480-era files into this profile:
+```bash
+yay
+```
 
-- `configs/system/intel.conf`
-- `configs/system/tlp.conf`
-- `configs/system/powertweaks.sh`
-- `configs/system/input.conf`
-- the Debian/APT-oriented `install.sh`
+can update both repository packages and AUR packages such as Chrome. Gruvnode never installs `yay` for you.
 
-Portable XMonad, xmobar, Kitty, picom, and session ideas may be reusable, but each should be reviewed for Arch package names, current upstream behavior, and the real X1 Carbon hardware before becoming active configuration.
+If the laptop has been off for a week or two, update normally before settling back into work. Check Arch news when an update announces manual intervention; Arch updates should not be treated as blindly unattended.
 
-## Next milestone
+## Troubleshooting
 
-Once Arch + XMonad boots on the machine, capture the verified hardware baseline and then add the smallest working Gruvnode configuration here. Until then, this README is the authoritative bootstrap direction rather than a claim of finished support.
+If X does not start:
+
+```bash
+xmonad --recompile
+startx
+```
+
+Check the XMonad compiler output and Xorg log/journal messages before changing drivers.
+
+If picom is suspected, stop it with `pkill picom` and restart XMonad. The desktop works without compositing.
+
+If audio is missing:
+
+```bash
+wpctl status
+systemctl --user status pipewire pipewire-pulse wireplumber
+```
+
+If networking or Bluetooth is missing:
+
+```bash
+systemctl status NetworkManager
+systemctl status bluetooth
+nmcli device
+```
+
+Hardware-specific behavior that has not yet been checked on the physical X1 Carbon should be fixed from observed evidence, not by copying the T480 profile.

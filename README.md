@@ -5,34 +5,44 @@
 ![ThinkPad](https://img.shields.io/badge/ThinkPad-X1%20Carbon-E2231A?logo=lenovo&logoColor=white)
 ![X11](https://img.shields.io/badge/display-X11-111111?logo=x.org&logoColor=white)
 
-**Gruvnode** is my personal Linux workstation concept: a small, practical collection of notes and configuration that evolves with the laptop carrying it.
+**Gruvnode** is my personal Linux workstation setup: minimal, keyboard-driven and meant to stay understandable when the hardware underneath it changes.
 
-The name belongs to the workstation setup, not to one specific machine. Hardware-specific configuration therefore lives in generation directories instead of at the repository root.
+The current machine is a ThinkPad X1 Carbon running Arch Linux + XMonad. The previous T480 generation is kept here as history rather than being flattened into the new setup.
 
 ![Gruvnode background](assets/wallpapers/gruvnode-background.png)
 
-## Hardware generations
+## Current machine
 
-### Current
+**Lenovo ThinkPad X1 Carbon — 16 GB RAM — Arch Linux + X11 + XMonad**
 
-**ThinkPad X1 Carbon — Arch Linux + XMonad**
+The active profile lives in [`thinkpad-x1-carbon/`](thinkpad-x1-carbon/). That directory contains the installer, XMonad desktop configuration and the practical setup notes for a fresh Arch system.
 
-The X1 Carbon is the active Gruvnode target. Its profile starts deliberately conservative: only verified machine facts and reviewed reusable configuration belong there. Hardware-specific details such as CPU, graphics, display, audio, webcam behavior, docking quirks, and battery tuning remain pending until they are checked on the machine.
+## Generations
 
-See [`thinkpad-x1-carbon/`](thinkpad-x1-carbon/).
+| Machine | System | Status |
+| --- | --- | --- |
+| ThinkPad X1 Carbon | Arch Linux + XMonad | **Current** |
+| ThinkPad T480 | Debian 13 + XMonad | Legacy |
 
-### Legacy
+The T480 files remain under [`thinkpad-t480/`](thinkpad-t480/) with their Debian-era tuning intact.
 
-**ThinkPad T480 — Debian 13 + XMonad**
+## Philosophy
 
-The T480 was the previous Gruvnode machine. Its installer, desktop configuration, tuning files, changelog, and other historical material are preserved under [`thinkpad-t480/`](thinkpad-t480/) rather than being rewritten as if they apply to the X1 Carbon.
+Minimal. Keyboard-driven. Reproducible enough to rebuild. Simple enough to debug.
+
+Portable desktop choices can move forward between generations; hardware-specific tuning earns its way back in only after the new machine proves it needs it.
 
 ## Repository layout
 
 ```text
 gruvnode/
-├── thinkpad-t480/          # previous Gruvnode generation
-├── thinkpad-x1-carbon/     # current Gruvnode generation
+├── thinkpad-x1-carbon/     # current Arch + XMonad profile
+│   ├── configs/
+│   ├── scripts/
+│   ├── tests/
+│   ├── install.sh
+│   └── README.md
+├── thinkpad-t480/          # historical Debian 13 profile
 ├── assets/
 │   └── wallpapers/
 │       └── gruvnode-background.png
@@ -40,12 +50,4 @@ gruvnode/
 └── README.md
 ```
 
-## Visual identity
-
-`assets/wallpapers/gruvnode-background.png` is the canonical Gruvnode background artwork. It belongs to the Gruvnode identity independently of any particular laptop generation.
-
-## Principle
-
-Reuse the portable parts. Re-validate the hardware-specific parts.
-
-That means XMonad and user-level configuration can be considered for reuse, while old Xorg, Intel, power-management, input, or TLP tuning is not carried to new hardware blindly.
+`assets/wallpapers/gruvnode-background.png` is the shared Gruvnode wallpaper and visual identity. Hardware generations reference it rather than carrying separate copies.
