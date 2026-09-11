@@ -39,6 +39,10 @@ bash -n "$PROFILE_DIR/scripts/xmobar-volume"
 pass "shell syntax"
 
 package_checks=(
+  linux-firmware
+  sof-firmware
+  alsa-utils
+  iwd
   xorg-server
   xorg-xinit
   xorg-xrandr
@@ -74,6 +78,14 @@ for package in "${package_checks[@]}"; do
     || fail "missing official package from installer: $package"
 done
 pass "required Arch package set"
+
+grep -Fq "wifi.backend=iwd" "$PROFILE_DIR/install.sh" \
+  || fail "installer does not configure NetworkManager to use iwd"
+grep -Fq "wifi.iwd.autoconnect=false" "$PROFILE_DIR/install.sh" \
+  || fail "installer does not keep NetworkManager in charge of Wi-Fi autoconnect"
+grep -Fq "systemctl --user enable --now pipewire.service pipewire-pulse.service wireplumber.service" "$PROFILE_DIR/install.sh" \
+  || fail "installer does not start the PipeWire/WirePlumber user services"
+pass "wireless firmware/backend and audio services"
 
 xmonad_checks=(
   'Tall 1'
