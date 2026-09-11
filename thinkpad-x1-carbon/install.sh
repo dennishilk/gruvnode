@@ -10,6 +10,10 @@ BACKUP_USED=0
 PACKAGES=(
   base-devel
   git
+  linux-firmware
+  sof-firmware
+  alsa-utils
+  iwd
   xorg-server
   xorg-xinit
   xorg-xrandr
@@ -161,10 +165,25 @@ install_chrome() {
     || die "Google Chrome installation completed without a usable Chrome command."
 }
 
+configure_wifi_backend() {
+  info "Configuring NetworkManager with the iwd Wi-Fi backend"
+
+  sudo install -d -m 0755 /etc/NetworkManager/conf.d
+  printf '%s\n' \
+    '[device]' \
+    'wifi.backend=iwd' \
+    'wifi.iwd.autoconnect=false' \
+    | sudo tee /etc/NetworkManager/conf.d/10-gruvnode-wifi.conf >/dev/null
+}
+
 configure_services() {
   info "Enabling laptop services"
   sudo systemctl enable --now NetworkManager.service
+  sudo systemctl restart NetworkManager.service
   sudo systemctl enable --now bluetooth.service
+
+  info "Starting PipeWire audio services"
+  systemctl --user enable --now pipewire.service pipewire-pulse.service wireplumber.service
 }
 
 deploy_profile() {
@@ -202,12 +221,15 @@ print_summary() {
   printf 'Browser: Google Chrome\n'
   printf 'File manager: Thunar\n'
   printf 'Text editor: Mousepad\n'
+  printf 'Wi-Fi: NetworkManager with iwd backend (iwctl is installed)\n'
+  printf 'Audio: PipeWire + WirePlumber + SOF/ALSA firmware support\n'
 
   if (( BACKUP_USED )); then
     printf 'Previous configuration was backed up under: %s\n' "$BACKUP_DIR"
   fi
 
-  printf '\nStart the desktop with: startx\n'
+  printf '\nA reboot is recommended after the first firmware/audio/Wi-Fi provisioning run.\n'
+  printf 'Start the desktop with: startx\n'
   printf 'For future repo updates: git pull && ./install.sh\n'
 }
 
@@ -217,6 +239,7 @@ main() {
   install_official_packages
   install_yay
   install_chrome
+  configure_wifi_backend
   configure_services
   deploy_profile
   validate_xmonad
