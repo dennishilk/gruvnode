@@ -52,6 +52,8 @@ package_checks=(
   kitty
   fastfetch
   obs-studio
+  thunar
+  mousepad
   pipewire
   pipewire-audio
   pipewire-pulse
@@ -106,6 +108,8 @@ key_checks=(
   '("M-<Return>", spawn myTerminal)'
   '("M-d", spawn "rofi -show drun")'
   '("M-b", spawn "google-chrome-stable")'
+  '("M-o", spawn "obs")'
+  '("M-t", spawn "thunar")'
   '("M-q", kill)'
   '("M-S-q", io exitSuccess)'
   '("M-<Space>", sendMessage NextLayout)'
@@ -129,7 +133,11 @@ for binding in "${key_checks[@]}"; do
   grep -Fq "$binding" "$PROFILE_DIR/configs/xmonad/xmonad.hs" \
     || fail "missing XMonad binding: $binding"
 done
-pass "Gruvnode keybindings"
+
+if grep -Fq 'mousepad' "$PROFILE_DIR/configs/xmonad/xmonad.hs"; then
+  fail "Mousepad should not have a dedicated XMonad binding"
+fi
+pass "Gruvnode keybindings and Mousepad no-binding rule"
 
 grep -Fq 'gruvnode-background.png' "$PROFILE_DIR/configs/xmonad/xmonad.hs" \
   || fail "XMonad does not reference the canonical wallpaper"
@@ -145,12 +153,16 @@ if find "$PROFILE_DIR" -type f \( -name 'intel.conf' -o -name 'tlp.conf' -o -nam
 fi
 pass "no T480 system tuning in X1 profile"
 
-grep -Fq 'command -v yay' "$PROFILE_DIR/install.sh" \
-  || fail "installer does not gate optional AUR use on existing yay"
-if grep -Eq 'PACKAGES=.*yay|^[[:space:]]+yay[[:space:]]*$' "$PROFILE_DIR/install.sh"; then
-  fail "installer must not install yay"
+if grep -Eq '^[[:space:]]+yay[[:space:]]*$' "$PROFILE_DIR/install.sh"; then
+  fail "yay must not be treated as an official pacman package"
 fi
-pass "yay remains optional"
+grep -Fq 'https://aur.archlinux.org/yay.git' "$PROFILE_DIR/install.sh" \
+  || fail "installer does not bootstrap yay from the AUR"
+grep -Fq 'makepkg -si --noconfirm' "$PROFILE_DIR/install.sh" \
+  || fail "installer does not build/install yay with makepkg"
+grep -Fq 'yay -S --needed --noconfirm google-chrome' "$PROFILE_DIR/install.sh" \
+  || fail "installer does not install Google Chrome through yay"
+pass "yay bootstrap and Google Chrome installation"
 
 if command -v shellcheck >/dev/null 2>&1; then
   shellcheck \

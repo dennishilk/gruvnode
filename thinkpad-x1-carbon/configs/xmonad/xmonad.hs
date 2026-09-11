@@ -51,6 +51,7 @@ myKeys =
   , ("M-d", spawn "rofi -show drun")
   , ("M-b", spawn "google-chrome-stable")
   , ("M-o", spawn "obs")
+  , ("M-t", spawn "thunar")
   , ("M-q", kill)
   , ("M-S-q", io exitSuccess)
   , ("M-<Space>", sendMessage NextLayout)
