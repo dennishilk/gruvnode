@@ -14,10 +14,12 @@ The profile is deliberately boring in the useful sense. It sets up the desktop a
 - feh
 - Fastfetch
 - OBS Studio + V4L2 tools
+- Thunar
+- Mousepad
 - PipeWire + WirePlumber
 - NetworkManager
 - BlueZ + Blueman
-- Google Chrome when an existing `yay` installation is available
+- `yay` + Google Chrome
 
 The canonical wallpaper lives at [`../assets/wallpapers/gruvnode-background.png`](../assets/wallpapers/gruvnode-background.png).
 
@@ -46,17 +48,17 @@ Gruvnode is not an Arch installer. Start with a normal Arch installation, prefer
    startx
    ```
 
-The installer updates Arch, installs the official package set with `pacman`, enables NetworkManager and Bluetooth, deploys the user configuration, links the shared Gruvnode wallpaper, and finishes with `xmonad --recompile`.
+The installer updates Arch, installs the official package set with `pacman`, enables NetworkManager and Bluetooth, deploys the user configuration, links the shared Gruvnode wallpaper, installs `yay` when needed, installs Google Chrome through `yay`, and finishes with `xmonad --recompile`.
 
 Existing Gruvnode-managed user config files are backed up before they are replaced. Re-running the installer after a `git pull` is expected and does not overwrite unrelated files.
 
 Fastfetch is installed but is not injected into shell startup. Add `fastfetch` to your shell init yourself if you want it on every terminal login.
 
-### Google Chrome
+### yay and Google Chrome
 
-Chrome is the one intentional exception to the official-package-only path. Gruvnode does **not** install `yay` or another AUR helper.
+Google Chrome is part of the X1 Gruvnode baseline and comes from the AUR. If `yay` is not already installed, the installer clones the `yay` package from `https://aur.archlinux.org/yay.git`, builds it locally with `makepkg`, and installs it as the normal user. It then installs `google-chrome` through `yay`.
 
-If `yay` already exists, the installer uses that existing workflow for `google-chrome`. If it does not exist, installation still succeeds and Chrome is left as a manual/AUR follow-up.
+If `yay` already exists, that installation is reused. Official repository packages still go through `pacman`; the AUR path is used for `yay` itself and Google Chrome.
 
 ## Keybindings
 
@@ -66,6 +68,7 @@ If `yay` already exists, the installer uses that existing workflow for `google-c
 | `Super + d` | Rofi |
 | `Super + b` | Google Chrome |
 | `Super + o` | OBS Studio |
+| `Super + t` | Thunar |
 | `Super + q` | Close focused window |
 | `Super + Shift + q` | Exit XMonad |
 | `Super + Space` | Next layout |
@@ -78,13 +81,15 @@ If `yay` already exists, the installer uses that existing workflow for `google-c
 | Volume keys | PipeWire volume via `wpctl` |
 | Brightness keys | Backlight via `brightnessctl` |
 
+Mousepad is installed as the lightweight graphical text editor but intentionally has no dedicated XMonad keybinding; launch it through Rofi when needed.
+
 The layouts are `Tall` and `Full`, with small spacing, smart borders and EWMH fullscreen support. Normal windows tile. Fullscreen windows full-float; EWMH dialogs, including normal OBS properties/source dialogs, are centered and floated.
 
 At session start XMonad applies the Gruvnode wallpaper, starts picom and starts the polkit authentication agent once. Xmobar is managed by XMonad's status-bar lifecycle and reads the `_XMONAD_LOG` property, so restart cleanup/startup stays in one place instead of relying on a fragile pipe.
 
 ## OBS and cameras
 
-OBS Studio and `v4l-utils` are installed. A USB camera that appears as a normal V4L2 device can be selected in OBS as a Video Capture Device source. PipeWire/WirePlumber provide the audio side.
+OBS Studio and `v4l-utils` are installed. `Super + o` launches OBS. A USB camera that appears as a normal V4L2 device can be selected in OBS as a Video Capture Device source. PipeWire/WirePlumber provide the audio side.
 
 No camera model, dock, webcam chipset or capture format is assumed here. Those still need to be checked on the actual X1 Carbon and whatever external camera is connected.
 
@@ -114,13 +119,13 @@ git pull
 ./install.sh
 ```
 
-For normal Arch updates, `pacman` is the official package manager. If you already use `yay`, your usual:
+For normal Arch updates, `pacman` remains the official package manager. Gruvnode also installs `yay`, so the usual:
 
 ```bash
 yay
 ```
 
-can update both repository packages and AUR packages such as Chrome. Gruvnode never installs `yay` for you.
+can update repository packages and AUR packages such as Google Chrome.
 
 If the laptop has been off for a week or two, update normally before settling back into work. Check Arch news when an update announces manual intervention; Arch updates should not be treated as blindly unattended.
 
