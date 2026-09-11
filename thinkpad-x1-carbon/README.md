@@ -17,7 +17,9 @@ The profile is deliberately boring in the useful sense. It sets up the desktop a
 - Thunar
 - Mousepad
 - PipeWire + WirePlumber
-- NetworkManager
+- ALSA utilities + SOF firmware
+- Linux firmware bundle
+- NetworkManager + iwd
 - BlueZ + Blueman
 - `yay` + Google Chrome
 
@@ -43,12 +45,12 @@ Gruvnode is not an Arch installer. Start with a normal Arch installation, prefer
    chmod +x install.sh
    ./install.sh
    ```
-6. Start the session:
+6. Reboot once after the first full provisioning run so newly installed firmware is available from a clean boot, then start the session with:
    ```bash
    startx
    ```
 
-The installer updates Arch, installs the official package set with `pacman`, enables NetworkManager and Bluetooth, deploys the user configuration, links the shared Gruvnode wallpaper, installs `yay` when needed, installs Google Chrome through `yay`, and finishes with `xmonad --recompile`.
+The installer updates Arch, installs the official package set with `pacman`, installs the Linux/SOF firmware and ALSA diagnostics, configures NetworkManager to use the iwd Wi-Fi backend, starts the PipeWire/WirePlumber user services, enables NetworkManager and Bluetooth, deploys the user configuration, links the shared Gruvnode wallpaper, installs `yay` when needed, installs Google Chrome through `yay`, and finishes with `xmonad --recompile`.
 
 Existing Gruvnode-managed user config files are backed up before they are replaced. Re-running the installer after a `git pull` is expected and does not overwrite unrelated files.
 
@@ -100,6 +102,34 @@ v4l2-ctl --list-devices
 wpctl status
 ```
 
+## Audio
+
+The profile installs `pipewire`, `pipewire-audio`, `pipewire-pulse`, `wireplumber`, `alsa-utils`, `linux-firmware` and `sof-firmware`. The installer explicitly starts/enables the PipeWire, PipeWire Pulse and WirePlumber user services.
+
+Xmobar gets its volume from `wpctl`, so `vol n/a` means no usable default PipeWire sink was available when the helper queried it. After the provisioning run and reboot, useful checks are:
+
+```bash
+wpctl status
+wpctl get-volume @DEFAULT_AUDIO_SINK@
+aplay -l
+systemctl --user status pipewire pipewire-pulse wireplumber
+```
+
+## Wi-Fi
+
+The profile installs the standard Linux firmware bundle and `iwd`. NetworkManager remains the network manager, with iwd configured as its Wi-Fi backend. Do not separately enable `iwd.service`; NetworkManager starts and manages it.
+
+`iwctl` is therefore installed for low-level inspection, while normal connection management should use NetworkManager tools such as:
+
+```bash
+nmcli device
+nmcli radio wifi
+nmcli device wifi list
+nmtui
+```
+
+If the Wi-Fi device is still missing after the first provisioning run, reboot once so the freshly installed firmware is available when the kernel driver initializes, then re-check `nmcli device` and the kernel log before adding hardware-specific driver tweaks.
+
 ## Laptop behavior
 
 This profile uses the standard Xorg modesetting path and libinput. It does not install the old T480 `xf86-video-intel` config or TLP tuning.
@@ -146,6 +176,7 @@ If audio is missing:
 
 ```bash
 wpctl status
+aplay -l
 systemctl --user status pipewire pipewire-pulse wireplumber
 ```
 
@@ -155,6 +186,7 @@ If networking or Bluetooth is missing:
 systemctl status NetworkManager
 systemctl status bluetooth
 nmcli device
+nmcli device wifi list
 ```
 
 Hardware-specific behavior that has not yet been checked on the physical X1 Carbon should be fixed from observed evidence, not by copying the T480 profile.
