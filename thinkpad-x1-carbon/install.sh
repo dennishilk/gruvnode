@@ -24,6 +24,8 @@ PACKAGES=(
   kitty
   fastfetch
   obs-studio
+  thunar
+  mousepad
   pipewire
   pipewire-audio
   pipewire-pulse
@@ -43,10 +45,6 @@ PACKAGES=(
 
 info() {
   printf '\n==> %s\n' "$1"
-}
-
-warn() {
-  printf 'WARNING: %s\n' "$1" >&2
 }
 
 die() {
@@ -122,6 +120,47 @@ install_official_packages() {
   sudo pacman -Syu --needed --noconfirm "${PACKAGES[@]}"
 }
 
+install_yay() {
+  if command -v yay >/dev/null 2>&1; then
+    info "yay is already installed"
+    return 0
+  fi
+
+  info "Installing yay from the AUR"
+
+  local build_root
+  build_root="$(mktemp -d)"
+
+  if ! git clone --depth=1 https://aur.archlinux.org/yay.git "$build_root/yay"; then
+    rm -rf -- "$build_root"
+    die "Failed to clone the yay AUR package."
+  fi
+
+  if ! (cd "$build_root/yay" && makepkg -si --noconfirm); then
+    rm -rf -- "$build_root"
+    die "Failed to build/install yay from the AUR."
+  fi
+
+  rm -rf -- "$build_root"
+  command -v yay >/dev/null 2>&1 || die "yay installation completed without a usable yay command."
+}
+
+install_chrome() {
+  info "Installing Google Chrome"
+
+  if command -v google-chrome-stable >/dev/null 2>&1 || command -v google-chrome >/dev/null 2>&1; then
+    printf 'Google Chrome is already installed.\n'
+    return 0
+  fi
+
+  yay -S --needed --noconfirm google-chrome \
+    || die "Google Chrome installation through yay failed."
+
+  command -v google-chrome-stable >/dev/null 2>&1 \
+    || command -v google-chrome >/dev/null 2>&1 \
+    || die "Google Chrome installation completed without a usable Chrome command."
+}
+
 configure_services() {
   info "Enabling laptop services"
   sudo systemctl enable --now NetworkManager.service
@@ -146,26 +185,6 @@ deploy_profile() {
   install_wallpaper_link
 }
 
-install_chrome_if_possible() {
-  info "Checking Google Chrome"
-
-  if command -v google-chrome-stable >/dev/null 2>&1 || command -v google-chrome >/dev/null 2>&1; then
-    printf 'Google Chrome is already installed.\n'
-    return 0
-  fi
-
-  if ! command -v yay >/dev/null 2>&1; then
-    warn "Google Chrome was not installed because yay is not present."
-    warn "Gruvnode does not install an AUR helper. Install Chrome manually later, or install it with your existing AUR workflow."
-    return 0
-  fi
-
-  printf 'yay is available; attempting optional AUR install of google-chrome.\n'
-  if ! yay -S --needed google-chrome; then
-    warn "Google Chrome installation through yay did not complete. The rest of Gruvnode is installed."
-  fi
-}
-
 validate_xmonad() {
   info "Validating XMonad configuration"
   if xmonad --recompile; then
@@ -179,18 +198,13 @@ print_summary() {
   printf '\nGruvnode X1 Carbon profile is installed.\n'
   printf 'Session: TTY login -> startx -> XMonad\n'
   printf 'Wallpaper: %s\n' "$HOME/.local/share/wallpapers/gruvnode-background.png"
+  printf 'AUR helper: yay\n'
+  printf 'Browser: Google Chrome\n'
+  printf 'File manager: Thunar\n'
+  printf 'Text editor: Mousepad\n'
 
   if (( BACKUP_USED )); then
     printf 'Previous configuration was backed up under: %s\n' "$BACKUP_DIR"
-  fi
-
-  if ! command -v google-chrome-stable >/dev/null 2>&1 && ! command -v google-chrome >/dev/null 2>&1; then
-    printf '\nOptional follow-up: Google Chrome is still not installed.\n'
-    if command -v yay >/dev/null 2>&1; then
-      printf 'Try: yay -S google-chrome\n'
-    else
-      printf 'Gruvnode intentionally does not install yay. Use your preferred AUR/manual method.\n'
-    fi
   fi
 
   printf '\nStart the desktop with: startx\n'
@@ -201,9 +215,10 @@ main() {
   require_arch
   ensure_regular_user
   install_official_packages
+  install_yay
+  install_chrome
   configure_services
   deploy_profile
-  install_chrome_if_possible
   validate_xmonad
   print_summary
 }
